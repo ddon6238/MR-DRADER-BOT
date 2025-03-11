@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR TRADER VIP BOT - Stylish Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 40px;
+            color: #00ffcc;
+            text-shadow: 0px 0px 10px #00ffcc;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px #00ffcc;
+        }
+
+        select, button, input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background: #152238;
+            color: #00ffcc;
+            transition: 0.3s;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0px 0px 10px #ff4b2b;
+            color: white;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
+            box-shadow: 0px 0px 15px #ff416c;
+        }
+
+        #signalResult, #nextCandle {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .buy {
+            background-color: green;
+        }
+
+        .sell {
+            background-color: red;
+        }
+
+        #nextCandle {
+            color: #ffd700;
+        }
+
+        #liveTime, #expiryInfo {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #00ffcc;
+        }
+
+        #licenseSection {
+            background: #ff4c4c;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ff4c4c;
+            margin-bottom: 20px;
+        }
+
+        #licenseValid {
+            background: #4caf50;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #4caf50;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>MR TRADER VIP BOT</h1>
+    
+    <div id="licenseSection">
+        <h3>🔑 Enter License Key</h3>
+        <input type="text" id="licenseKey" placeholder="Enter License Key">
+        <button id="validateLicense">✔ Connect</button>
+        <p id="licenseError" style="color: yellow; display: none;">❌ Invalid License! Try Again.</p>
+    </div>
+
+    <div id="licenseValid">
+        <h3>✅ License Activated</h3>
+        <p id="expiryInfo">⏳ Expiry Date: Apr 11, 2025</p>
+    </div>
+
+    <div id="liveTime">⏳ Loading Live Time...</div>
+
+    <div class="container" id="tradingPanel" style="display: none;">
+        <label>Select Broker:</label>
+        <select id="platform">
+            <option value="Quotex">📈 Quotex</option>
+            <option value="PocketOption">📉 Pocket Option</option>
+            <option value="Binomo">📊 Binomo</option>
+            <option value="OlympTrade">📊 Olymp Trade</option>
+            <option value="IQOption">💹 IQ Option</option>
+        </select>
+
+        <label>Select Market:</label>
+        <select id="market">
+            <option value="Real">Real Market</option>
+            <option value="OTC">OTC Market</option>
+        </select>
+
+        <label>Select Trading Pair:</label>
+        <select id="pair">
+            <option value="AUD/USD">AUD/USD</option>
+            <option value="EUR/JPY">EUR/JPY</option>
+            <option value="EUR/CHF">EUR/CHF</option>
+            <option value="AUD/CAD">AUD/CAD</option>
+            <option value="USD/PKR OTC">USD/PKR OTC</option>
+        </select>
+        
+        <label>Select Timeframe:</label>
+        <select id="timeframe">
+            <option value="60">1 Min</option>
+            <option value="30">30 Sec</option>
+            <option value="300">5 Min</option>
+        </select>
+        
+        <button id="getSignal">🚀 Get Signal</button>
+        
+        <div id="signalResult"></div>
+        <div id="nextCandle"></div>
+    </div>
+
+    <script>
+        const validLicense = "031723";
+        const expiryDate = new Date("2025-04-11T23:59:59");
+
+        function updateLiveTime() {
+            let now = new Date();
+            document.getElementById("liveTime").innerText = "⏳ Live Market Time: " + now.toLocaleTimeString();
+        }
+        setInterval(updateLiveTime, 1000);
+        updateLiveTime();
+
+        document.getElementById("validateLicense").addEventListener("click", function() {
+            let enteredKey = document.getElementById("licenseKey").value;
+            if (enteredKey === validLicense) {
+                document.getElementById("licenseSection").style.display = "none";
+                document.getElementById("licenseValid").style.display = "block";
+                document.getElementById("tradingPanel").style.display = "block";
+                startExpiryCountdown();
+            } else {
+                document.getElementById("licenseError").style.display = "block";
+            }
+        });
+
+        function startExpiryCountdown() {
+            setInterval(() => {
+                let now = new Date();
+                let timeLeft = expiryDate - now;
+                if (timeLeft <= 0) {
+                    document.getElementById("expiryInfo").innerText = "❌ License Expired!";
+                    document.getElementById("tradingPanel").style.display = "none";
+                }
+            }, 1000);
+        }
+
+        document.getElementById("getSignal").addEventListener("click", function() {
+            let pair = document.getElementById("pair").value;
+            let market = document.getElementById("market").value;
+            let actions = ["BUY", "SELL"];
+            let signal = actions[Math.floor(Math.random() * actions.length)];
+            let nextCandleTime = new Date();
+            nextCandleTime.setMinutes(nextCandleTime.getMinutes() + 1);
+            let formattedTime = nextCandleTime.toTimeString().split(" ")[0];
+
+            let actualMarketMove = signal; // یہ فرضی ہے، اصل میں Quotex API سے ڈیٹا لینا ہوگا
+            let result = signal === actualMarketMove ? "✅ WIN" : "❌ LOSS";
+
+            document.getElementById("nextCandle").innerText = `⏳ Next Candle ${formattedTime} → ${signal}`;
+            document.getElementById("nextCandle").style.display = "block";
+
+            let signalBox = document.getElementById("signalResult");
+            signalBox.innerText = `🚀 ${signal} - ${pair} (${market})\n${result}`;
+            signalBox.style.display = "block";
+            signalBox.className = signal === "BUY" ? "buy" : "sell";
+        });
+    </script>
+
+</body>
+</html>
